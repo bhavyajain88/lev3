@@ -1,9 +1,30 @@
-from flask import Flask
+from flask import Flask, request, jsonify, session
+from flask_cors import CORS
+import os
+
 app = Flask(__name__)
+CORS(app)
+app.secret_key = 'your-secret-key'  # Required for session
 
-@app.route("/")
-def hello():
-    return "Lead Extractor Backend (placeholder for full app.py code)"
+# Dummy user list
+USERS = {
+    "john": "pass123",
+    "alice": "alice123"
+}
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
+
+    if USERS.get(username) == password:
+        session['username'] = username
+        return jsonify({"message": "Login successful"})
+    return jsonify({"error": "Invalid username or password"}), 401
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.clear()
+    return jsonify({"message": "Logged out"})
+
